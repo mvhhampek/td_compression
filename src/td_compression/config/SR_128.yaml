@@ -1,0 +1,65 @@
+experiment: {name: SR_128, seed: 1337}
+data:
+  train_dir: data/real_and_sim
+  num_workers: 4
+  val_split: 0.2
+  batch_size: 16
+  input_shape: [32, 64, 64]
+  buffer_frames: 25
+model:
+  latent_dim: 128
+  encoder:
+    type: conv_encoder_2d
+    dropout: 0.15
+    in_channels: 32
+    hidden_channels: [64, 128, 256, 512]
+    kernel_sizes:
+    - [3, 3]
+    - [3, 3]
+    - [3, 3]
+    - [3, 3]
+    strides:
+    - [2, 2]
+    - [2, 2]
+    - [2, 2]
+    - [1, 1]
+    padding:
+    - [1, 1]
+    - [1, 1]
+    - [1, 1]
+    - [1, 1]
+    activation: leaky_relu
+    norm: group_norm
+  decoder:
+    type: conv_decoder_2d
+    dropout: 0.15
+    out_channels: 32
+    upsample_mode: nearest
+    final_activation: identity
+    hidden_channels: [512, 256, 128, 64]
+    kernel_sizes:
+    - [3, 3]
+    - [3, 3]
+    - [3, 3]
+    - [3, 3]
+    strides:
+    - [1, 1]
+    - [2, 2]
+    - [2, 2]
+    - [2, 2]
+    padding:
+    - [1, 1]
+    - [1, 1]
+    - [1, 1]
+    - [1, 1]
+    output_padding:
+    - [0, 0]
+    - [1, 1]
+    - [1, 1]
+    - [1, 1]
+    activation: elu
+    norm: group_norm
+loss: {beta: 0.0001, warmup_steps: 1500, focal_alpha: 0.85, focal_gamma: 3.0, alpha_tversky: 0.3,
+  beta_tversky: 0.7}
+trainer: {weight_decay: 0.0001, learning_rate: 0.0001, max_epochs: 300, patience: 30,
+  min_lr: 1.0e-08, t_0: 50, t_mult: 2, accumulate_grad_batches: 2}
