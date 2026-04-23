@@ -85,6 +85,8 @@ class BatchDecoder(Node):
         self.playback_rate = 0.1 # rviz cant keep up :(
         self.timer = self.create_timer(self.playback_rate, self.process_next_keyframe)
 
+        self.map_has_data = False
+        self.map_timer = self.create_timer(5.0, self.publish_current_map)
     def process_next_keyframe(self):
         if not self.keyframe_files:
             self.get_logger().warn("No keyframes found!!")
@@ -92,6 +94,8 @@ class BatchDecoder(Node):
             return
 
         if self.current_idx < len(self.keyframe_files):
+            # if self.current_idx > 9:
+            #     return
             filepath = self.keyframe_files[self.current_idx]
             self.decode_single(filepath)
         else:
@@ -144,15 +148,29 @@ class BatchDecoder(Node):
             global_pts = np.ascontiguousarray(global_pts)
 
             self.octo_manager.inject_points(global_pts)
+            self.map_has_data = True
 
-            map_bytes = self.octo_manager.get_serialized_map()
-            msg = Octomap(header=Header(stamp=current_time, frame_id=self.fixed_frame), 
-                        binary=True, id="OcTree", resolution=self.res)
-            msg.data = np.frombuffer(map_bytes, dtype=np.int8).tolist()
-            self.octo_pub.publish(msg)
+            self.publish_current_map()
+            # map_bytes = self.octo_manager.get_serialized_map()
+            # msg = Octomap(header=Header(stamp=current_time, frame_id=self.fixed_frame), 
+            #             binary=True, id="OcTree", resolution=self.res)
+            # msg.data = np.frombuffer(map_bytes, dtype=np.int8).tolist()
+            # self.octo_pub.publish(msg)
 
         self.current_idx += 1
         self.get_logger().info(f"Reconstructed {self.current_idx}/{len(self.keyframe_files)}.")
+
+    def publish_current_map(self):
+        if not self.map_has_data:
+            return
+            
+        current_time = self.get_clock().now().to_msg()
+        map_bytes = self.octo_manager.get_serialized_map()
+        
+        msg = Octomap(header=Header(stamp=current_time, frame_id=self.fixed_frame), 
+                    binary=True, id="OcTree", resolution=self.res)
+        msg.data = np.frombuffer(map_bytes, dtype=np.int8).tolist()
+        self.octo_pub.publish(msg)
 
     def publish_rviz_markers(self, tx, ty, tz, kf_id):
         now = self.get_clock().now().to_msg()

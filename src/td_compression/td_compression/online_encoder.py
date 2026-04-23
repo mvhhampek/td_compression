@@ -23,7 +23,7 @@ class OnlineEncoder(Node):
         super().__init__('online_encoder')
 
         self.octomap_topic = '/octomap_binary'
-        self.fixed_frame = 'chinook/odom'#'odom'
+        self.fixed_frame = 'world'#'odom'
         self.ego_frame = 'chinook/base'#'cave_drone/base_link'
         
         pkg_share = get_package_share_directory('td_compression')

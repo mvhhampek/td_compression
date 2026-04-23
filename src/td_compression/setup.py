@@ -32,17 +32,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            # 'gridmap2pcd = td_compression.gridmap2pcd:main',
-            # 'pcd_submap = td_compression.pcd_submap:main',
-            # 'bev_generator = td_compression.bev_generator:main',
             'online_encoder = td_compression.online_encoder:main',
             'batch_decoder = td_compression.batch_decoder:main',
-            'training_data_collector = td_compression.training_data_collector:main',
-
-            'voxblox_tester = td_compression.voxblox_tester:main',
-            'tsdf_decoder = td_compression.tsdf_decoder:main',
-
-            
+            'click_to_goal = td_compression.click_to_goal:main',
         ],
     },
 )
